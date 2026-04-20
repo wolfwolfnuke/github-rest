@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import uvicorn
 import discord
 import asyncio
@@ -19,11 +19,21 @@ def double(x: int):
     return {"result": x * 2}
 @app.get("/send")
 async def send(m:str,c:int):
-    channel = client.get_channel(c)
-    if channel is None:
-        channel = await client.fetch_channel(c)
-    await channel.send("m")
-    return {"status": "sent"}
+    try:
+        channel = client.get_channel(c)
+        if channel is None:
+            channel = await client.fetch_channel(c)
+        await channel.send(m)
+        succeded = "true"
+        return {"status": succeded}
+
+    except discord.errors.NotFound:
+        raise HTTPException(404, "Channel not found. Did you put the channel name instead?")
+
+    except discord.errors.Forbidden:
+        raise HTTPException(403, "No permission to send messages")
+
+    
 
 token = os.environ['DISCORDTOKEN']
 t1 = threading.Thread(target=lambda: client.run(token))
