@@ -4,6 +4,10 @@ import discord
 import asyncio
 import threading
 import os
+import sqlite3
+my_db = sqlite3.connect("api.db")
+db_cursor = my_db.cursor()
+
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -11,14 +15,8 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 app = FastAPI()
-@app.get("/hello")
-def hello():
-    return {"message": "Hello, RaspAPI!"}
-@app.get("/double")
-def double(x: int):
-    return {"result": x * 2}
 @app.get("/send")
-async def send(m:str,c:int):
+async def send(m:str,c:int,a:str):
     try:
         channel = client.get_channel(c)
         if channel is None:
@@ -31,7 +29,7 @@ async def send(m:str,c:int):
         raise HTTPException(404, "Channel not found. Did you put the channel name instead?")
 
     except discord.errors.Forbidden:
-        raise HTTPException(403, "No permission to send messages")
+        raise HTTPException(403, "No permission to send messages. Is the bot in the server, and does it have permission to access and send messages in the channel?")
 
     
 
